@@ -25,7 +25,11 @@ const mainState = {
         spaceKey.onDown.add(this.jump, this);
 
         // timer to spawn new pipes
-        this.timer = game.time.events.loop(1500, this.addPipeRow, this); 
+        this.timer = game.time.events.loop(1500, this.addPipeRow, this);
+
+        // score
+        this.score = 0;
+        this.labelScore = game.add.text(20, 20, "0", { font: "30px Arial", fill: "#ffffff" });
     },
 
     update: function() {
@@ -34,9 +38,14 @@ const mainState = {
 
         // If the bird is out of the screen (too high or too low)
         // Call the 'restartGame' function
-        if (this.bird.y < 0 || this.bird.y > 490) {
+        if (this.bird.y < 0) {
             this.restartGame();
+        } else if (this.bird.y > 490 && this.bird.body.velocity.y > 0) {
+            this.bird.body.velocity.y = -1 * this.bird.body.velocity.y;
         }
+
+        // restart when bird hits pipe
+        game.physics.arcade.overlap(this.bird, this.pipes, this.restartGame, null, this);
     },
     // Make the bird jump 
     jump: function() {
@@ -57,6 +66,9 @@ const mainState = {
                 this.addPipe(400, n * 60 + 10);
             }
         }
+
+        this.score += 1;
+        this.labelScore.text = this.score;
     },
     addPipe: function(x,y) {
         const pipe = game.add.sprite(x, y, 'pipe');
