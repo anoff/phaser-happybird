@@ -1,3 +1,4 @@
+
 // Create our 'main' state that will contain the game
 const mainState = {
     preload: function() { 
@@ -5,6 +6,8 @@ const mainState = {
         // That's where we load the images and sounds 
 
         game.load.image('bird', 'assets/bird.png');
+        game.load.image('pipe', 'assets/pipe.png');
+        this.pipes = game.add.group(); 
     },
 
     create: function() { 
@@ -17,8 +20,12 @@ const mainState = {
         game.physics.arcade.enable(this.bird);
         this.bird.body.gravity.y = 1000;
 
+        // create action for space key press
         const spaceKey = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
-        spaceKey.onDown.add(this.jump, this);  
+        spaceKey.onDown.add(this.jump, this);
+
+        // timer to spawn new pipes
+        this.timer = game.time.events.loop(1500, this.addPipeRow, this); 
     },
 
     update: function() {
@@ -29,9 +36,6 @@ const mainState = {
         // Call the 'restartGame' function
         if (this.bird.y < 0 || this.bird.y > 490) {
             this.restartGame();
-        }
-        if (this.bird.y > 350 && this.bird.body.velocity.y > 0) {
-            this.bird.body.velocity.y = -0.9 * this.bird.body.velocity.y;
         }
     },
     // Make the bird jump 
@@ -45,6 +49,25 @@ const mainState = {
         // Start the 'main' state, which restarts the game
         game.state.start('main');
     },
+
+    addPipeRow: function() {
+        const hole = Math.floor(Math.random() * 5) + 1;
+        for (let n = 0; n < 8; n++) {
+            if (n < hole || n > hole + 1) {
+                this.addPipe(400, n * 60 + 10);
+            }
+        }
+    },
+    addPipe: function(x,y) {
+        const pipe = game.add.sprite(x, y, 'pipe');
+        this.pipes.add(pipe);
+
+        game.physics.arcade.enable(pipe);
+        pipe.body.velocity.x = -200;
+
+        pipe.checkWorldBounds = true;
+        pipe.outOfBoundsKill = true;
+    }
 };
 
 // Initialize Phaser, and create a 400px by 490px game
